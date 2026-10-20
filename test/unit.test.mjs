@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {EMPLOYERS,RESUMES,classifySponsorship,chooseResume,orderedMatchingJobs} from '../src/policy.mjs';
 
-test('26 targets, exact three resume files',()=>{assert.equal(EMPLOYERS.length,26);assert.equal(EMPLOYERS.includes('Discord'),true);assert.equal(EMPLOYERS.includes('PNW'),true);assert.deepEqual(Object.values(RESUMES),['Resume_Jaswanth(3).pdf','Resume_Jaswanth(4).pdf','Resume_Jaswanth(5).pdf']);});
+test('generic demo employers and three configurable resume categories',()=>{assert.ok(EMPLOYERS.length>=1);assert.ok(EMPLOYERS.includes('Google'));assert.deepEqual(Object.values(RESUMES),['backend-resume.pdf','cloud-resume.pdf','developer-productivity-resume.pdf']);});
 test('exclude explicit no-sponsorship variants',()=>{
  for(const text of ['We do not offer visa sponsorship for this role.','Applicants must be authorized to work in the US without company sponsorship now or in the future.','Visa sponsorship is not available.','The company will not sponsor H-1B visas.'])assert.equal(classifySponsorship(text).status,'explicitly_excluded',text);
 });
