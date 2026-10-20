@@ -26,7 +26,7 @@ Set these values **only on your machine or hosting provider**, not in Git:
 | Environment variable | Purpose | Default example |
 | --- | --- | --- |
 | `JOB_SCOUT_EMPLOYERS` | Comma-separated target employer list | Google, Microsoft, Amazon |
-| `JOB_SCOUT_LOCATIONS` | Comma-separated preferred locations | US-remote |
+| `JOB_SCOUT_LOCATIONS` | Semicolon-separated preferred locations (commas allowed inside a location, e.g. New York, NY) | US-remote |
 | `JOB_SCOUT_BACKEND_RESUME` | Backend resume display name | backend-resume.pdf |
 | `JOB_SCOUT_CLOUD_RESUME` | Cloud/infrastructure resume display name | cloud-resume.pdf |
 | `JOB_SCOUT_PRODUCTIVITY_RESUME` | Developer productivity resume display name | developer-productivity-resume.pdf |
