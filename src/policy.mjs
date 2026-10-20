@@ -1,13 +1,13 @@
 // Generic demonstration settings. Keep personal preferences in environment variables,
 // never in a publicly committed repository.
 // Immigration screening is a keyword-based aid, not legal advice. Verify employer postings.
-function csvSetting(name, defaults) {
+function listSetting(name, defaults, delimiter=',') {
   const raw=process.env[name];
   if (!raw?.trim()) return defaults;
-  return [...new Set(raw.split(',').map(s=>s.trim()).filter(Boolean))];
+  return [...new Set(raw.split(delimiter).map(s=>s.trim()).filter(Boolean))];
 }
-export const EMPLOYERS = csvSetting('JOB_SCOUT_EMPLOYERS', ['Google','Microsoft','Amazon']);
-export const LOCATIONS = csvSetting('JOB_SCOUT_LOCATIONS', ['US-remote']);
+export const EMPLOYERS = listSetting('JOB_SCOUT_EMPLOYERS', ['Google','Microsoft','Amazon']);
+export const LOCATIONS = listSetting('JOB_SCOUT_LOCATIONS', ['US-remote'], ';');
 export const RESUMES = {
   backend: process.env.JOB_SCOUT_BACKEND_RESUME || 'backend-resume.pdf',
   cloud: process.env.JOB_SCOUT_CLOUD_RESUME || 'cloud-resume.pdf',
