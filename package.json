@@ -1,0 +1,16 @@
+{
+  "name": "linkedin-job-scout-chatgpt",
+  "version": "0.1.1",
+  "private": true,
+  "description": "Read-only ChatGPT MCP HTTP gateway for saisudhir14/linkedin-mcp-search",
+  "type": "module",
+  "engines": {"node": ">=22"},
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "test:live": "node test/live-smoke.mjs"
+  },
+  "dependencies": {
+    "linkedin-mcp-search": "1.1.0"
+  }
+}
