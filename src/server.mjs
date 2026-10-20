@@ -2,18 +2,18 @@ import http from 'node:http';
 import {timingSafeEqual} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {StdioMcpClient} from './bridge.mjs';
-import {EMPLOYERS, RESUMES, orderedMatchingJobs} from './policy.mjs';
+import {EMPLOYERS, LOCATIONS, RESUMES, orderedMatchingJobs} from './policy.mjs';
 
 const readOnly={readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:true};
 const p=(properties,required=[])=>({type:'object',properties,required,additionalProperties:false});
 const str=(description)=>({type:'string',description});
 const tools=[
-  {name:'search_jobs',description:'Read-only discovery of public LinkedIn job listings, newest first. Supports pagination via start. Employer-official posting verification is REQUIRED before claiming sponsorship or a live opening.',inputSchema:p({keywords:str('Role keywords, e.g. senior backend engineer'),company:str('Company from the 26 employers'),location:str('Austin TX, San Francisco Bay Area CA, or United States'),datePosted:{type:'string',enum:['past-hour','past-24-hours','past-week','past-month','any-time']},workplaceType:{type:'array',items:{type:'string',enum:['remote','hybrid','on-site']}},start:{type:'integer',minimum:0},limit:{type:'integer',minimum:1,maximum:100}}),annotations:readOnly},
+  {name:'search_jobs',description:'Read-only discovery of public LinkedIn job listings, newest first. Supports pagination via start. Employer-official posting verification is REQUIRED before claiming sponsorship or a live opening.',inputSchema:p({keywords:str('Role keywords, e.g. senior backend engineer'),company:str('Employer name, optionally from configured target list'),location:str('City, metro area, region or US-remote'),datePosted:{type:'string',enum:['past-hour','past-24-hours','past-week','past-month','any-time']},workplaceType:{type:'array',items:{type:'string',enum:['remote','hybrid','on-site']}},start:{type:'integer',minimum:0},limit:{type:'integer',minimum:1,maximum:100}}),annotations:readOnly},
   {name:'get_job_details',description:'Read-only full description from public LinkedIn job page. These are not verified official employer terms; check the company careers page separately.',inputSchema:p({jobId:{type:'string',pattern:'^[0-9]+$',description:'LinkedIn numeric job ID'}},['jobId']),annotations:readOnly},
   {name:'search_companies',description:'Discover LinkedIn company IDs via public listings; name must be supplied.',inputSchema:p({query:str('Company name')},['query']),annotations:readOnly},
-  {name:'get_company_jobs',description:'Find an employer\'s public LinkedIn jobs, newest first; paginate with start. Does not prove active status on employer career page.',inputSchema:p({companyId:str('Numeric LinkedIn company ID or company name'),keywords:str('Engineering role keywords'),location:str('Austin, Bay Area, or US remote'),start:{type:'integer',minimum:0},limit:{type:'integer',minimum:1,maximum:100}},['companyId']),annotations:readOnly},
+  {name:'get_company_jobs',description:'Find an employer\'s public LinkedIn jobs, newest first; paginate with start. Does not prove active status on employer career page.',inputSchema:p({companyId:str('Numeric LinkedIn company ID or company name'),keywords:str('Engineering role keywords'),location:str('City, metro area, region or US-remote'),start:{type:'integer',minimum:0},limit:{type:'integer',minimum:1,maximum:100}},['companyId']),annotations:readOnly},
   {name:'screen_jobs',description:'Read-only screening of jobs for explicit NO SPONSORSHIP language, chronological sorting, and best one of three resume variants. Only official employer-provided posting text should be supplied in officialPostingText, and the caller must independently verify URL and authenticity. Unknown H-1B policies must be marked recruiter-confirmation-needed. This tool does NOT retrieve/verify employer careers pages itself.',inputSchema:p({jobs:{type:'array',minItems:0,maxItems:300,items:{type:'object',properties:{id:{type:'string'},company:{type:'string'},title:{type:'string'},description:{type:'string'},officialPostingText:{type:'string'},officialUrl:{type:'string'},officialPostedAt:{type:'string'},postedDate:{type:'string'}},required:['company','title'],additionalProperties:true}}},['jobs']),annotations:readOnly},
-  {name:'get_search_plan',description:'Return all 26 target employers, target locations and three resume mappings. PNW is unresolved; do not guess its identity.',inputSchema:p({}),annotations:readOnly}
+  {name:'get_search_plan',description:'Return configurable employer examples, locations and three resume categories. Defaults are fictionalized/generalized and may be overridden by environment variables.',inputSchema:p({}),annotations:readOnly}
 ];
 const upstreamNames=new Set(['search_jobs','get_job_details','search_companies','get_company_jobs']);
 function safeString(x){return typeof x==='string'?x:'';}
@@ -38,7 +38,7 @@ function toUpstream(name,args) {
 function mcpContent(obj){return {content:[{type:'text',text:JSON.stringify(obj)}]};}
 export async function dispatch(name,args,upstream){
   validateTool(name,args);
-  if(name==='get_search_plan') return mcpContent({employers:EMPLOYERS,locations:['Austin, TX','San Francisco Bay Area, CA','San Jose, CA','US-remote'],resumes:RESUMES,ambiguousEmployer:'PNW',sourcePolicy:'LinkedIn is discovery only. Verify on the official employer site, exclude explicit no-sponsorship, mark silence as unknown.'});
+  if(name==='get_search_plan') return mcpContent({employers:EMPLOYERS,locations:LOCATIONS,resumes:RESUMES,sourcePolicy:'LinkedIn is discovery only. Verify on the official employer site, exclude explicit no-sponsorship, mark silence as unknown.'});
   if(name==='screen_jobs')return mcpContent(orderedMatchingJobs(args.jobs));
   const mapped=toUpstream(name,args);
   return await upstream.callTool(mapped.name,mapped.params);
