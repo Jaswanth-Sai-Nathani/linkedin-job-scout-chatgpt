@@ -33,19 +33,20 @@ try {
  if(list.tools.some(t=>!t.annotations?.readOnlyHint))throw Error('Unexpected write tool');
  log('Tool discovery and read-only metadata','PASS');
  const plan=await call('get_search_plan');
- if(plan.employers.length!==26)throw Error('Expected 26 employers');
- log('26-company configuration','PASS');
+ if(!Array.isArray(plan.employers)||!plan.employers.length)throw Error('Expected configured employers');
+ log('Configurable employer examples','PASS');
  const screened=await call('screen_jobs',{jobs:[
   {title:'Cloud Engineer',company:'Example',officialPostingText:'This position does not support H1B visa transfers.',postedDate:'2026-10-18'},
   {title:'Senior Backend Engineer',company:'Example',officialPostingText:'Must be legally authorized to work in the US.',postedDate:'2026-10-17'}
  ]});
  if(screened.excludedCount!==1||screened.count!==1)throw Error('Incorrect sponsorship screening');
  log('H-1B filter and unknown-policy retention','PASS');
- const companies=await call('search_companies',{query:'Oracle'});
+ const company=plan.employers[0];
+ const companies=await call('search_companies',{query:company});
  log('Live company discovery','PASS',`${companies.count??companies.companies?.length??'unknown'} companies returned`);
- const search=await call('search_jobs',{company:'Oracle',keywords:'software engineer',location:'Austin, TX',datePosted:'past-week',limit:10,start:0});
+ const search=await call('search_jobs',{company,keywords:'software engineer',location:plan.locations?.[0]||'United States',datePosted:'past-week',limit:10,start:0});
  if(!Array.isArray(search.jobs))throw Error('No jobs array in upstream response');
- log('Live Oracle job search','PASS',`${search.jobs.length} jobs; nextStart=${search.nextStart??'none'}`);
+ log('Live sample job search','PASS',`${search.jobs.length} jobs; nextStart=${search.nextStart??'none'}`);
  if(search.jobs.length){
   const jd=await call('get_job_details',{jobId:String(search.jobs[0].id)});
   log('Live job details','PASS',jd?.job?.title||`job ${search.jobs[0].id}`);
