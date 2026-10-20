@@ -1,15 +1,17 @@
-// Decisions below are keyword-based screening aids, NOT immigration legal advice.
-// H-1B conclusions must be verified against the company's own official posting.
-export const EMPLOYERS = [
-  'Oracle','Microsoft','LinkedIn','Databricks','Salesforce','SoFi','Snowflake',
-  'Natera','Google','Meta','Apple','Indeed','PayPal','Intuit','Adobe','SmithRx',
-  'PNW','Plaid','Discord','Canva','Waymo','Lead Bank','Uber','CoreWeave',
-  'Grammarly','Amazon'
-];
+// Generic demonstration settings. Keep personal preferences in environment variables,
+// never in a publicly committed repository.
+// Immigration screening is a keyword-based aid, not legal advice. Verify employer postings.
+function csvSetting(name, defaults) {
+  const raw=process.env[name];
+  if (!raw?.trim()) return defaults;
+  return [...new Set(raw.split(',').map(s=>s.trim()).filter(Boolean))];
+}
+export const EMPLOYERS = csvSetting('JOB_SCOUT_EMPLOYERS', ['Google','Microsoft','Amazon']);
+export const LOCATIONS = csvSetting('JOB_SCOUT_LOCATIONS', ['US-remote']);
 export const RESUMES = {
-  backend: 'Resume_Jaswanth(3).pdf',
-  cloud: 'Resume_Jaswanth(4).pdf',
-  productivity: 'Resume_Jaswanth(5).pdf'
+  backend: process.env.JOB_SCOUT_BACKEND_RESUME || 'backend-resume.pdf',
+  cloud: process.env.JOB_SCOUT_CLOUD_RESUME || 'cloud-resume.pdf',
+  productivity: process.env.JOB_SCOUT_PRODUCTIVITY_RESUME || 'developer-productivity-resume.pdf'
 };
 const NO_SPONSORSHIP_PATTERNS = [
   /(?:do(?:es)? not|will not|cannot|can't|unable to|not able to|won't)\s+(?:offer|provide|consider|support)?\s*(?:visa|immigration|h[\s-]?1b|work\s+visa)?\s*sponsors?(?:hip|hips)?/i,
